@@ -1,36 +1,61 @@
 #include <stdio.h>
 #include "RLEList.h"
+#include "AsciiArtTool.h"
+#include <string.h>
 
-
-char addOneToAscii(char c)
+char mapFunction(char c)
 {
-    if((int)c == 255)
+    if(c == '@')
     {
-        return (char)1;
+        return ' ';
     }
-    return (char)((int)c + 1);
+
+    else if(c == ' ')
+    {
+        return '@';
+    }
+
+    return c;
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
 
-    RLEListResult r1;
-    RLEListResult* result = &r1;
-    RLEList list = RLEListCreate();
-    RLEListAppend(list, 'A');
-    RLEListAppend(list, 'A');
-    RLEListAppend(list, 'B');
-    RLEListAppend(list, 'B');
-
-
-    RLEListMap(list, addOneToAscii);
-    printf("CHAR: %c\n", RLEListGet(list, 7, result));
-    char* RLEString = RLEListExportToString(list, result);
-    if(*result == RLE_LIST_SUCCESS)
+    if(argc != 4)
     {
-        printf("%s", RLEString);
+        printf("Usage: ./AsciiArtTool.c (i/e) (sourceFile) (targetFile)");
+        return 1;
+    }
+    FILE* inFile = fopen(argv[2], "r"); // source file
+    FILE* outFile = fopen(argv[3], "w"); // target file
+
+
+    RLEList list = asciiArtRead(inFile);
+
+
+    if(strcmp(argv[1],"-i") == 0)
+    {
+        RLEListMap(list, mapFunction);
+        asciiArtPrint(list, outFile);
+        fclose(inFile);
+        fclose(outFile);
+        return 0;
     }
 
-    return 0;
+    else if (strcmp(argv[1],"-e") == 0)
+    {
+        asciiArtPrintEncoded(list, outFile);
+        fclose(inFile);
+        fclose(outFile);
+        return 0;
+    }
+
+    else
+    {
+        printf("Usage: ./main.c (i/e) (sourceFile) (targetFile)");
+        fclose(inFile);
+        fclose(outFile);
+        return 1;
+    }
 }
